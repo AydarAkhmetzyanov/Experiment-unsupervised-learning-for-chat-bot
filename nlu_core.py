@@ -37,14 +37,20 @@ def utterance_to_bow(utterance):
 	bow=dictionary.doc2bow(utterance)
 	return bow
 
-def utterance_to_result(utterance):
+def utterance_to_result_limited(utterance):
 	result=""
 	
 	vec_lda = lda[utterance_to_bow(utterance)]
 	
+	sims = index[vec_lda]
+	sims = sorted(enumerate(sims), key=lambda item: -item[1])[0:1]
+
+	return str(dfr['answer'][sims[0][0]])
+
+def utterance_to_result(utterance):
+	result=""
 	
-	
-	
+	vec_lda = lda[utterance_to_bow(utterance)]
 	
 	sims = index[vec_lda]
 	sims = sorted(enumerate(sims), key=lambda item: -item[1])[0:5]
@@ -55,21 +61,11 @@ def utterance_to_result(utterance):
 		result = result + str(nearest[1]) + "\n" + str(dfr['answer'][nearest[0]]) + "\nВопрос в логе: " + str(dfr['question'][nearest[0]]) + "\n\n" 
 	
 	result+="\n\n\nNearest clusters:\n\n"
-	
-	
 	vec_lda_sorted = sorted(vec_lda, key=lambda tup: -tup[1])
-	print(vec_lda_sorted)
-	
-	
 	for cluster in vec_lda_sorted:
 		topic_text = ""
 		for keyword in lda.show_topic(cluster[0],topn=12):
 			topic_text = topic_text + " " + keyword[0]
 		result = result + str(cluster[1]) + "\n" + topic_text +  "\n\n"
-		
-	
-	#print(lda.print_topic(max(vec_lda, key=lambda item: item[1])[0]))
-
-	
 	return result
 	
